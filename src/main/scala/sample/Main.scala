@@ -17,6 +17,9 @@
 package main.scala.sample
 
 import org.apache.spark.sql.Row
+
+import scala.io.StdIn
+import scala.reflect.ClassTag.Any
 // $example on:init_session$
 import org.apache.spark.sql.SparkSession
 // $example off:init_session$
@@ -25,35 +28,80 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 // $example off:data_types$
 // $example off:programmatic_schema$
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
+import sys.process._
 
 // Need Spark version >= v2.1
-object SparkSQLExample {
+object Main {
 
   // $example on:create_ds$
   case class Person(name: String, age: Long)
   // $example off:create_ds$
 
   def main(args: Array[String]) {
+    // Disable logging
+    Logger.getLogger("org").setLevel(Level.OFF)
+    Logger.getLogger("akka").setLevel(Level.OFF)
+
     // $example on:init_session$
     val spark = SparkSession
       .builder()
       .appName("Spark SQL basic example")
-      .config("spark.some.config.option", "some-value")
+      .config("spark.master", "local")
       .getOrCreate()
 
     // For implicit conversions like converting RDDs to DataFrames
     import spark.implicits._
     // $example off:init_session$
 
-    runBasicDataFrameExample(spark)
-    runDatasetCreationExample(spark)
+    println("Welcome to Google App Workbench!")
+
+    var continue = true;
+    while(continue) {
+      askOption(spark)
+    }
+    //runBasicDataFrameExample(spark)
+    //runDatasetCreationExample(spark)
 
     spark.stop()
   }
 
+  private def askOption(spark: SparkSession): Unit = {
+    val menu : Map[Int, (String, (SparkSession) => Unit)] = Map(
+      1 -> ("List Minimum Install Count", listMinInsallCount),
+    )
+
+    printOptions(menu)
+    print("Please select an option: ")
+    var selectedOption = StdIn.readLine().toInt
+    while(!menu.contains(selectedOption)){
+      selectedOption = StdIn.readLine().toInt
+    }
+
+    clearConsole()
+    menu.get(selectedOption).get._2.apply(spark)
+    clearConsole()
+
+  }
+
+  private def clearConsole(): Unit = {
+    Seq("cmd", "/c", "cls").!
+  }
+  private def printOptions(menu: Map[Int, (String, (SparkSession) => Unit)]): Unit = {
+    println("============ MENU ============")
+    for((k,v) <- menu){
+      val menu_option = menu.get(k).get._1
+      println(f"$k -- $menu_option")
+    }
+  }
+  private def listMinInsallCount(spark: SparkSession): Unit = {
+    println("Hola")
+  }
+
   private def runBasicDataFrameExample(spark: SparkSession): Unit = {
     // $example on:create_df$
-    val df = spark.read.json("wasb:///example/data/people.json")
+    val df = spark.read.json("data/__default__/example/data/people.json")
 
     // Displays the content of the DataFrame to stdout
     df.show()
@@ -172,7 +220,7 @@ object SparkSQLExample {
     primitiveDS.map(_ + 1).collect() // Returns: Array(2, 3, 4)
 
     // DataFrames can be converted to a Dataset by providing a class. Mapping will be done by name
-    val path = "wasb:///example/data/people.json"
+    val path = "data/__default__/example/data/people.json"
     val peopleDS = spark.read.json(path).as[Person]
     peopleDS.show()
     // +---+-----+
