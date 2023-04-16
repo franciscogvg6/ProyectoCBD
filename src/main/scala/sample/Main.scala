@@ -30,7 +30,7 @@ import org.apache.spark.sql.types._
 // $example off:programmatic_schema$
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
-import sys.process._
+import menu._
 
 // Need Spark version >= v2.1
 object Main {
@@ -57,9 +57,20 @@ object Main {
 
     println("Welcome to Google App Workbench!")
 
+    println("Loading data...")
+    val df = spark.read.option("header",true).csv("data/Google-Playstore.csv")
+
+    val menu = new Menu()
+
     var continue = true;
     while(continue) {
-      askOption(spark)
+      val selectedOption = menu.askOption()
+
+      clearConsole()
+      menu.getOption(selectedOption).start(spark,df)
+      clearConsole()
+
+      continue = askContinue(spark)
     }
     //runBasicDataFrameExample(spark)
     //runDatasetCreationExample(spark)
@@ -67,36 +78,26 @@ object Main {
     spark.stop()
   }
 
-  private def askOption(spark: SparkSession): Unit = {
-    val menu : Map[Int, (String, (SparkSession) => Unit)] = Map(
-      1 -> ("List Minimum Install Count", listMinInsallCount),
-    )
+  private def askContinue(spark: SparkSession): Boolean = {
+    val yeses = Seq("y", "yes")
+    val noses = Seq("n", "no")
 
-    printOptions(menu)
-    print("Please select an option: ")
-    var selectedOption = StdIn.readLine().toInt
-    while(!menu.contains(selectedOption)){
-      selectedOption = StdIn.readLine().toInt
+    print("Would you like to do another task? (Y/N): ")
+    var cont = StdIn.readLine()
+    while (!yeses.contains(cont.toLowerCase()) && !noses.contains(cont.toLowerCase())) {
+      print("Would you like to do another task? (Y/N): ")
+      cont = StdIn.readLine()
     }
 
-    clearConsole()
-    menu.get(selectedOption).get._2.apply(spark)
-    clearConsole()
-
+    if (yeses.contains(cont.toLowerCase())) {
+      clearConsole()
+      true
+    } else {
+      false
+    }
   }
-
   private def clearConsole(): Unit = {
-    Seq("cmd", "/c", "cls").!
-  }
-  private def printOptions(menu: Map[Int, (String, (SparkSession) => Unit)]): Unit = {
-    println("============ MENU ============")
-    for((k,v) <- menu){
-      val menu_option = menu.get(k).get._1
-      println(f"$k -- $menu_option")
-    }
-  }
-  private def listMinInsallCount(spark: SparkSession): Unit = {
-    println("Hola")
+    print("\n\n")
   }
 
   private def runBasicDataFrameExample(spark: SparkSession): Unit = {
