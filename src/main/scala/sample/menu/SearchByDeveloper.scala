@@ -1,4 +1,5 @@
 package main.scala.sample.menu
+import main.scala.sample.Main
 import org.apache.spark.sql.functions.{col, to_date, unix_timestamp}
 import org.apache.spark.sql.types.{DateType, DoubleType, LongType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -7,21 +8,21 @@ import spire.implicits.eqOps
 import scala.io.StdIn
 
 class SearchByDeveloper extends MenuOption {
-  override def start(spark: SparkSession, data: DataFrame): Unit = {
-    val devs = data.select("Developer Id").distinct()
+  override def start(): Unit = {
+    val devs = Main.data.select("Developer Id").distinct()
     val selectedDev = askDeveloper(devs)
     val sorting = askSorting()
 
     if(sorting == "Rating"){
-      val search = data.filter(col("Developer Id") === selectedDev).sort(col(sorting).cast("double").desc)
+      val search = Main.data.filter(col("Developer Id") === selectedDev).sort(col(sorting).cast("double").desc)
       search.show()
     }
     else if(sorting == "Minimum Installs"){
-      val search = data.filter(col("Developer Id") === selectedDev).sort(col(sorting).cast("long").desc)
+      val search = Main.data.filter(col("Developer Id") === selectedDev).sort(col(sorting).cast("long").desc)
       search.show()
     }
     else if(sorting == "Released"){
-      val search = data.filter(col("Developer Id") === selectedDev).sort(unix_timestamp(col(sorting), "MMM d, yyyy").desc)
+      val search = Main.data.filter(col("Developer Id") === selectedDev).sort(unix_timestamp(col(sorting), "MMM d, yyyy").desc)
       search.show()
     }
 

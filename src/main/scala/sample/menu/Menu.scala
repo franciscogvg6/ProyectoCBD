@@ -1,49 +1,144 @@
 package main.scala.sample.menu
 
-import scala.io.StdIn
+import main.scala.sample.Main
 
-class Menu {
-  //ADD CLASSES TO MENU
-  private var options : Map[Int, MenuOption] = Map(
-    1 -> new ListMinInstalledCount(),
-    2 -> new SearchByDeveloper(),
+import scala.swing._
+import java.awt.Color
+import javax.swing.SwingWorker
+
+class Menu() extends MainFrame {
+  private val FILENAME = "Google-Playstore.csv"
+
+  background = Color.WHITE
+  private var dataLoaded : Boolean = Main.data != null
+
+  //DEFINE MENU CLASSES
+  private val search_options : Seq[MenuOption] = Seq(
+    new SearchByDeveloper(),
   )
 
-  def getOption(i: Int): MenuOption = {
-    options.get(i).orNull
+  private val list_options : Seq[MenuOption] = Seq(
+    new ListMinInstalledCount(),
+    new ListRatingCount(),
+  )
+
+  private val predict_options: Seq[MenuOption] = Seq.empty[MenuOption]
+
+  //DEFINE MENU SECTIONS
+  private val options : Map[String,Seq[MenuOption]] = Map(
+    "Search" -> search_options,
+    "Listings" -> list_options,
+    "Predictions" -> predict_options,
+  )
+
+  //CALCULATE GRID ROWS
+  private var options_size = options.size
+  for (sub_options <- options){
+    options_size += sub_options._2.size
   }
 
-  def getOptions(): Map[Int, MenuOption] = {
-    options
-  }
+  def start(): Unit = {
 
-  def addOption(index: Int, menuOption: MenuOption): Unit = {
-    options = options + (index -> menuOption)
-  }
-
-  def removeOption(index: Int): Unit = {
-    options = options - (index)
-  }
-
-  def printOptions(): Unit = {
-    println("============ MENU ==============================")
-    for ((k, _) <- options) {
-      val menuOption = getOption(k).toString
-      println(f"$k -- $menuOption")
+    title = "Loading data..."
+    //LOAD DATA FRAME
+    contents = new BoxPanel(Orientation.Vertical) {
+      border = Swing.EmptyBorder(10)
+      contents += new Label("Loading Data...")
     }
-    println("================================================")
+    visible = true
+    pack()
+    centerOnScreen()
+    open()
+
+    //BACKGROUND WORK
+    val worker = new SwingWorker[Boolean, Unit] {
+      override def doInBackground(): Boolean = {
+        try {
+          // Read file
+          val df = Main.spark.read.option("header", true).csv(s"data/$FILENAME")
+          Main.data = df
+          true
+
+        } catch {
+          case e: Throwable => {
+            false
+          }
+        }
+      }
+
+      override def done(): Unit = {
+        var loadResultText = "Done!"
+        val result = get()
+        if (!result) {
+          loadResultText = "The datafile text was not found."
+        }
+
+        val boxPanel = contents.head.asInstanceOf[BoxPanel]
+        val newLabel = new Label(loadResultText)
+        boxPanel.contents += newLabel
+
+        boxPanel.contents += new Button("Close") {
+          reactions += {
+            case event.ButtonClicked(_) => {
+              if (result) {
+                loadMenu()
+              }
+              close()
+            }
+          }
+        }
+        pack()
+
+      }
+    }
+    worker.execute()
+
+
   }
 
-  def askOption(): Int = {
-    printOptions()
-    print("Please select an option: ")
-    var selectedOption = StdIn.readLine().toInt
-    while (!getOptions().contains(selectedOption)) {
-      println("\nThat option does not exist")
-      print("Please select an option: ")
-      selectedOption = StdIn.readLine().toInt
+  private def loadMenu(): Unit = {
+    val mainFrame = new Frame {
+      title = "Menu"
+      background = Color.WHITE
+
+      contents = new BoxPanel(Orientation.Vertical) {
+        border = Swing.EmptyBorder(10)
+
+        for (sub_option <- options) {
+          contents += new GridPanel(sub_option._2.size + 1, 1) {
+
+            if (sub_option._1 != "Load Data") {
+              border = Swing.CompoundBorder(Swing.EmptyBorder(0, 0, 5, 0), Swing.LineBorder(Color.BLACK))
+              contents += new Label(sub_option._1)
+            }
+            for (o <- sub_option._2) {
+              contents += new Button(o.toString) {
+                reactions += {
+                  case event.ButtonClicked(_) => o.start()
+                }
+              }
+            }
+          }
+        }
+        contents += new GridPanel(1, 1) {
+          contents += new Button("Close") {
+            reactions += {
+              case event.ButtonClicked(_) => {
+                Main.spark.close()
+                sys.exit(0)
+              }
+            }
+          }
+        }
+
+
+      }
+
     }
-    selectedOption
+    mainFrame.visible = true
+    mainFrame.pack()
+    mainFrame.centerOnScreen()
+    mainFrame.open()
   }
 
 }
