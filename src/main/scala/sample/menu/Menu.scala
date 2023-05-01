@@ -99,28 +99,49 @@ class Menu() extends MainFrame {
   private def loadMenu(): Unit = {
     val mainFrame = new Frame {
       title = "Menu"
-      background = Color.WHITE
+      background = Color.getHSBColor(60,75,90)
 
-      contents = new BoxPanel(Orientation.Vertical) {
+      contents = new GridBagPanel() {
+        def constraints(x: Int, y: Int,
+                        gridwidth: Int = 1, gridheight: Int = 1,
+                        weightx: Double = 0.0, weighty: Double = 0.0,
+                        fill: GridBagPanel.Fill.Value = GridBagPanel.Fill.None)
+        : Constraints = {
+          val c = new Constraints
+          c.gridx = x
+          c.gridy = y
+          c.gridwidth = gridwidth
+          c.gridheight = gridheight
+          c.weightx = weightx
+          c.weighty = weighty
+          c.fill = fill
+          c
+        }
+
         border = Swing.EmptyBorder(10)
 
+        var it = 0
         for (sub_option <- options) {
-          contents += new GridPanel(sub_option._2.size + 1, 1) {
+          val boxPanel =  new BoxPanel(Orientation.Vertical) {
+            contents += new GridPanel(sub_option._2.size + 1, 1) {
 
-            if (sub_option._1 != "Load Data") {
-              border = Swing.CompoundBorder(Swing.EmptyBorder(0, 0, 5, 0), Swing.LineBorder(Color.BLACK))
-              contents += new Label(sub_option._1)
-            }
-            for (o <- sub_option._2) {
-              contents += new Button(o.toString) {
-                reactions += {
-                  case event.ButtonClicked(_) => o.start()
+              if (sub_option._1 != "Load Data") {
+                border = Swing.CompoundBorder(Swing.EmptyBorder(0, 2, 5, 2), Swing.LineBorder(Color.BLACK))
+                contents += new Label(sub_option._1)
+              }
+              for (o <- sub_option._2) {
+                contents += new Button(o.toString) {
+                  reactions += {
+                    case event.ButtonClicked(_) => o.start()
+                  }
                 }
               }
             }
           }
+          add(boxPanel,constraints(it,0,1,1,fill=GridBagPanel.Fill.Both))
+          it += 1
         }
-        contents += new GridPanel(1, 1) {
+        val closeButton = new GridPanel(1, 1) {
           contents += new Button("Close") {
             reactions += {
               case event.ButtonClicked(_) => {
@@ -130,7 +151,7 @@ class Menu() extends MainFrame {
             }
           }
         }
-
+        add(closeButton,constraints(0,2,options_size,fill=GridBagPanel.Fill.Both))
 
       }
 
