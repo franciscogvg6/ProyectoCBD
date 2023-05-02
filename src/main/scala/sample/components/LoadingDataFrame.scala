@@ -3,7 +3,7 @@ package main.scala.sample.components
 import main.scala.sample.menu
 import main.scala.sample.menu.ListMinInstalledCount
 
-import scala.swing.{BoxPanel, Frame, Label, Orientation, Swing}
+import scala.swing.{BoxPanel, Component, Frame, Label, Orientation, Swing}
 
 class LoadingDataFrame(frameTitle: String) extends Frame {
   title = frameTitle
@@ -18,4 +18,5 @@ class LoadingDataFrame(frameTitle: String) extends Frame {
     centerOnScreen()
     open
   }
+
 }

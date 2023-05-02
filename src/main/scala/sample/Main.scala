@@ -27,6 +27,8 @@ import menu._
 object Main {
   var data : DataFrame = null
   var spark : SparkSession = null
+  var devs : Seq[String] = null
+
   private def config(): SparkSession = {
     // Disable logging
     Logger.getLogger("org").setLevel(Level.OFF)

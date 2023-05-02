@@ -1,6 +1,8 @@
 package main.scala.sample.menu
 
 import main.scala.sample.Main
+import org.apache.spark.sql.Encoders
+import org.apache.spark.sql.functions.col
 
 import scala.swing._
 import java.awt.Color
@@ -57,10 +59,16 @@ class Menu() extends MainFrame {
           // Read file
           val df = Main.spark.read.option("header", true).csv(s"data/$FILENAME")
           Main.data = df
+          Main.devs = df.select("Developer Id")
+            .distinct()
+            .sort(col("Developer Id"))
+            .map(dev => dev.getString(0))(Encoders.STRING)
+            .collect().toSeq
           true
 
         } catch {
           case e: Throwable => {
+            e.printStackTrace()
             false
           }
         }
@@ -84,6 +92,9 @@ class Menu() extends MainFrame {
                 loadMenu()
               }
               close()
+              if(!result) {
+                System.exit(0)
+              }
             }
           }
         }
