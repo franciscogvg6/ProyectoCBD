@@ -3,6 +3,9 @@
     <output-path>$PROJECT_DIR$/out/artifacts/ProyectoCBD_DefaultArtifact</output-path>
     <root id="archive" name="default_artifact.jar">
       <element id="module-output" name="ProyectoCBD" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/out/META-INF/MANIFEST.MF" />
+      </element>
     </root>
   </artifact>
 </component>

@@ -19,7 +19,7 @@ import java.util.List;
  * Usage: JavaSparkPi [slices]
  * This is adapted from Apache Spark GitHub: https://github.com/apache/spark/blob/master/examples/src/main/java/org/apache/spark/examples/JavaSparkPi.java
  */
-public final class JavaSparkPi {
+public final class  JavaSparkPi {
     public static void main(String[] args) throws Exception {
         // use this line if you want to run your application in the cluster
         // SparkConf sparkConf = new SparkConf().setAppName("JavaSparkPi");
