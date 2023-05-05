@@ -8,7 +8,7 @@ import org.apache.spark.sql.{DataFrame, Encoders}
 import java.awt.Toolkit
 import javax.swing.SwingWorker
 import scala.swing.event.ButtonClicked
-import scala.swing.{BoxPanel, Button, ButtonGroup, ComboBox, Component, Dimension, FlowPanel, Frame, GridPanel, Label, Orientation, Point, RadioButton, Swing}
+import scala.swing.{BoxPanel, Button, ButtonGroup, ComboBox, Dimension, FlowPanel, Frame, GridPanel, Label, Orientation, Point, RadioButton, Swing}
 
 class SearchByDeveloper extends MenuOption {
   override def toString(): String = {
@@ -21,7 +21,8 @@ class SearchByDeveloper extends MenuOption {
       title = "Search Panel"
 
       // COMPONENTS
-      val devComboBox = new ComboBox[String](Main.devs)
+      val devComboBox = new ComboBox[String](Main.devs.map(dev => dev.getString(0))(Encoders.STRING)
+                                                      .collect().toSeq)
       val acceptedSortings = Seq("Rating", "Minimum Installs", "Released")
       val sortingRadios = acceptedSortings.map(sorting => new RadioButton(sorting)).toSeq
       val sortingGroup = new ButtonGroup(sortingRadios: _*)
@@ -61,7 +62,7 @@ class SearchByDeveloper extends MenuOption {
 
   private def loadSearch(developer: String,sorting: String) : Unit = {
 
-    val window = new LoadingDataFrame(SearchByDeveloper.this.toString())
+    val window = new LoadingDataFrame(SearchByDeveloper.this.toString(),"Loading data...")
     window.start()
 
     val worker = new SwingWorker[(DataFrame, DataFrame),Unit] {

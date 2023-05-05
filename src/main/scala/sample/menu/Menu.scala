@@ -1,8 +1,7 @@
 package main.scala.sample.menu
 
 import main.scala.sample.Main
-import org.apache.spark.sql.Encoders
-import org.apache.spark.sql.functions.col
+import sample.menu.PredictRatingsAndInstalls
 
 import scala.swing._
 import java.awt.Color
@@ -12,7 +11,7 @@ class Menu() extends MainFrame {
   private val FILENAME = "Google-Playstore.csv"
 
   background = Color.WHITE
-  private var dataLoaded : Boolean = Main.data != null
+  resizable = false
 
   //DEFINE MENU CLASSES
   private val search_options : Seq[MenuOption] = Seq(
@@ -24,7 +23,9 @@ class Menu() extends MainFrame {
     new ListRatingCount(),
   )
 
-  private val predict_options: Seq[MenuOption] = Seq.empty[MenuOption]
+  private val predict_options: Seq[MenuOption] = Seq(
+    new PredictRatingsAndInstalls(),
+  )
 
   //DEFINE MENU SECTIONS
   private val options : Map[String,Seq[MenuOption]] = Map(
@@ -34,18 +35,20 @@ class Menu() extends MainFrame {
   )
 
   //CALCULATE GRID ROWS
-  private var options_size = options.size
-  for (sub_options <- options){
-    options_size += sub_options._2.size
-  }
+  private val options_max_size = options.map(section => section._2.size).max + 1
 
   def start(): Unit = {
 
     title = "Loading data..."
     //LOAD DATA FRAME
+    val loadProgress = new ProgressBar() {
+      indeterminate = true
+    }
+
     contents = new BoxPanel(Orientation.Vertical) {
       border = Swing.EmptyBorder(10)
       contents += new Label("Loading Data...")
+      contents += loadProgress
     }
     visible = true
     pack()
@@ -61,9 +64,7 @@ class Menu() extends MainFrame {
           Main.data = df
           Main.devs = df.select("Developer Id")
             .distinct()
-            .sort(col("Developer Id"))
-            .map(dev => dev.getString(0))(Encoders.STRING)
-            .collect().toSeq
+            .sort("Developer Id")
           true
 
         } catch {
@@ -76,16 +77,22 @@ class Menu() extends MainFrame {
 
       override def done(): Unit = {
         var loadResultText = "Done!"
+        var buttonText = "Start"
         val result = get()
         if (!result) {
-          loadResultText = "The datafile text was not found."
+          loadResultText = "The datafile could not be loaded."
+          buttonText = "Exit"
         }
 
-        val boxPanel = contents.head.asInstanceOf[BoxPanel]
         val newLabel = new Label(loadResultText)
-        boxPanel.contents += newLabel
+        val boxPanel = new GridPanel(2,1) {
+          border = Swing.EmptyBorder(10)
+          contents += newLabel
+        }
+        contents = boxPanel
 
-        boxPanel.contents += new Button("Close") {
+        // START BUTTON
+        boxPanel.contents += new Button(buttonText) {
           reactions += {
             case event.ButtonClicked(_) => {
               if (result) {
@@ -112,35 +119,22 @@ class Menu() extends MainFrame {
       title = "Menu"
       background = Color.getHSBColor(60,75,90)
 
-      contents = new GridBagPanel() {
-        def constraints(x: Int, y: Int,
-                        gridwidth: Int = 1, gridheight: Int = 1,
-                        weightx: Double = 0.0, weighty: Double = 0.0,
-                        fill: GridBagPanel.Fill.Value = GridBagPanel.Fill.None)
-        : Constraints = {
-          val c = new Constraints
-          c.gridx = x
-          c.gridy = y
-          c.gridwidth = gridwidth
-          c.gridheight = gridheight
-          c.weightx = weightx
-          c.weighty = weighty
-          c.fill = fill
-          c
-        }
+      contents = new BoxPanel(Orientation.Vertical) {
 
         border = Swing.EmptyBorder(10)
 
-        var it = 0
-        for (sub_option <- options) {
-          val boxPanel =  new BoxPanel(Orientation.Vertical) {
-            contents += new GridPanel(sub_option._2.size + 1, 1) {
+        val optionsPanel = new GridPanel(1,3)
 
-              if (sub_option._1 != "Load Data") {
+        for (functionality <- options) {
+          val boxPanel =  new BoxPanel(Orientation.Vertical) {
+
+            contents += new GridPanel(options_max_size, 1) {
+
+              if (functionality._1 != "Load Data") {
                 border = Swing.CompoundBorder(Swing.EmptyBorder(0, 2, 5, 2), Swing.LineBorder(Color.BLACK))
-                contents += new Label(sub_option._1)
+                contents += new Label(functionality._1)
               }
-              for (o <- sub_option._2) {
+              for (o <- functionality._2) {
                 contents += new Button(o.toString) {
                   reactions += {
                     case event.ButtonClicked(_) => o.start()
@@ -149,11 +143,16 @@ class Menu() extends MainFrame {
               }
             }
           }
-          add(boxPanel,constraints(it,0,1,1,fill=GridBagPanel.Fill.Both))
-          it += 1
+
+          // ACCUMULATE SECTIONS
+          optionsPanel.contents += boxPanel
         }
-        val closeButton = new GridPanel(1, 1) {
-          contents += new Button("Close") {
+        // ADD SECTIONS TO THE MENU
+        contents += optionsPanel
+
+        // LASTLY, THE EXIT BUTTON
+        val closeButton = new FlowPanel() {
+          val button = new Button("Exit") {
             reactions += {
               case event.ButtonClicked(_) => {
                 Main.spark.close()
@@ -161,8 +160,12 @@ class Menu() extends MainFrame {
               }
             }
           }
+          contents += new FlowPanel {
+            contents += button
+          }
+
         }
-        add(closeButton,constraints(0,2,options_size,fill=GridBagPanel.Fill.Both))
+        contents += closeButton
 
       }
 
