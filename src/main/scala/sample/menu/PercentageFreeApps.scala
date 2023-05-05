@@ -9,7 +9,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import scala.io.Source
 import java.awt.{Color, Toolkit}
 import javax.swing.SwingWorker
-import scala.swing.{Dimension, Frame, Label, Point, Swing, TextField}
+import scala.swing.MenuBar.NoMenuBar.contents
+import scala.swing.{BoxPanel, Dimension, Frame, Label, Orientation, Point, Swing, TextField}
 
 class PercentageFreeApps extends MenuOption{
 
@@ -29,11 +30,10 @@ class PercentageFreeApps extends MenuOption{
 
       override def done(): Unit = {
         val dataTable: Double = get()
-
-        window.preferredSize = new Dimension(1080, 720)
-        window.location = new Point(0, 0)
-        val dataTableString: String = dataTable.toString()
-        window.contents = new TextField(dataTableString)
+        window.contents = new BoxPanel(Orientation.Vertical) {
+          border = Swing.EmptyBorder(10)
+          contents += new Label(f"El porcentaje de aplicaciones gratuitas es: $dataTable%1.2f %%")
+        }
         window.pack()
 
       }
@@ -51,7 +51,6 @@ class PercentageFreeApps extends MenuOption{
 
     val percentage = data.toDouble / total * 100
 
-    println(s"El porcentaje de aplicaciones gratuitas es: $percentage%")
     percentage
   }
 }

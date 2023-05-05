@@ -5,7 +5,7 @@ import main.scala.sample.components.LoadingDataFrame
 import org.apache.spark.sql.functions.{avg, col}
 
 import javax.swing.SwingWorker
-import scala.swing.{Dimension, Point, TextField}
+import scala.swing.{BoxPanel, Dimension, Label, Orientation, Point, Swing, TextField}
 
 class AveragePrice extends MenuOption{
 
@@ -25,11 +25,10 @@ class AveragePrice extends MenuOption{
 
       override def done(): Unit = {
         val dataTable: Double = get()
-
-        window.preferredSize = new Dimension(1080, 720)
-        window.location = new Point(0, 0)
-        val dataTableString: String = dataTable.toString()
-        window.contents = new TextField(dataTableString)
+        window.contents = new BoxPanel(Orientation.Vertical) {
+          border = Swing.EmptyBorder(10)
+          contents += new Label(f"La media de aplicaciones de pago es: $dataTable%1.2f €")
+        }
         window.pack()
 
       }
@@ -47,7 +46,6 @@ class AveragePrice extends MenuOption{
       noGratis.agg(Map("Price" -> "avg")).first().getDouble(0)
     }
 
-    println(s"La media de aplicaciones de pago es de: $average €")
     average
   }
 
