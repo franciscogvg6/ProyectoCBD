@@ -1,6 +1,7 @@
 package main.scala.sample.menu
 
 import main.scala.sample.Main
+import org.apache.spark.sql.functions.{col, lower}
 import sample.menu.PredictRatingsAndInstalls
 
 import scala.swing._
@@ -64,7 +65,7 @@ class Menu() extends MainFrame {
           Main.data = df
           Main.devs = df.select("Developer Id")
             .distinct()
-            .sort("Developer Id")
+            .sort(lower(col("Developer Id")).asc)
           true
 
         } catch {
@@ -117,7 +118,7 @@ class Menu() extends MainFrame {
   private def loadMenu(): Unit = {
     val mainFrame = new Frame {
       title = "Menu"
-      background = Color.getHSBColor(60,75,90)
+      resizable = false
 
       contents = new BoxPanel(Orientation.Vertical) {
 

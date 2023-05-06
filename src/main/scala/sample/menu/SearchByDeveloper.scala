@@ -8,7 +8,7 @@ import org.apache.spark.sql.{DataFrame, Encoders}
 import java.awt.Toolkit
 import javax.swing.SwingWorker
 import scala.swing.event.ButtonClicked
-import scala.swing.{BoxPanel, Button, ButtonGroup, ComboBox, Dimension, FlowPanel, Frame, GridPanel, Label, Orientation, Point, RadioButton, Swing}
+import scala.swing.{BoxPanel, Button, ButtonGroup, ComboBox, Dimension, FlowPanel, Frame, GridPanel, Label, Orientation, Point, ProgressBar, RadioButton, Swing}
 
 class SearchByDeveloper extends MenuOption {
   override def toString(): String = {
@@ -16,53 +16,70 @@ class SearchByDeveloper extends MenuOption {
   }
   override def start(): Unit = {
 
-    // CHOOSE DEVELOPER
-    val window = new Frame {
-      title = "Search Panel"
+    val window = new LoadingDataFrame(frameTitle = "Loading developer data...",
+      loadingText = "Loading developer data...")
+    window.contents.head.asInstanceOf[BoxPanel].contents += new ProgressBar {
+      indeterminate = true
+    }
+    window.start()
 
-      // COMPONENTS
-      val devComboBox = new ComboBox[String](Main.devs.map(dev => dev.getString(0))(Encoders.STRING)
-                                                      .collect().toSeq)
-      val acceptedSortings = Seq("Rating", "Minimum Installs", "Released")
-      val sortingRadios = acceptedSortings.map(sorting => new RadioButton(sorting)).toSeq
-      val sortingGroup = new ButtonGroup(sortingRadios: _*)
-      val continueButton = new Button("Search") {
-        reactions += {
-          case ButtonClicked(_) => {
-            loadSearch(devComboBox.selection.item,sortingGroup.buttons.filter(button => button.selected).head.text)
-            close()
+    val worker = new SwingWorker[Seq[String],Unit] {
+      override def doInBackground(): Seq[String] = {
+        Main.devs.filter(col("Developer Id").isNotNull).map(dev => dev.getString(0))(Encoders.STRING)
+          .collect().toSeq
+      }
+
+      override def done(): Unit = {
+        window.title = "Search Panel"
+
+        // COMPONENTS
+        val devComboBox = new ComboBox[String](get().toSeq)
+        val acceptedSortings = Seq("Rating", "Minimum Installs", "Released")
+        val sortingRadios = acceptedSortings.map(sorting => new RadioButton(sorting)).toSeq
+        val sortingGroup = new ButtonGroup(sortingRadios: _*)
+        sortingGroup.select(sortingRadios.head)
+        val continueButton = new Button("Search") {
+          reactions += {
+            case ButtonClicked(_) => {
+              loadSearch(devComboBox.selection.item, sortingGroup.buttons.filter(button => button.selected).head.text)
+              window.close()
+            }
           }
         }
-      }
 
-      // PUTTING COMPONENTS ON SCREEN
-      contents = new GridPanel(3,1){
-        contents += new FlowPanel(){
-          contents += new Label("Developer: ")
-          contents += Swing.HStrut(5)
-          contents += devComboBox
+        // PUTTING COMPONENTS ON SCREEN
+        window.contents = new GridPanel(3, 1) {
+          border = Swing.EmptyBorder(10)
+
+          contents += new FlowPanel() {
+            contents += new Label("Developer: ")
+            contents += Swing.HStrut(5)
+            contents += devComboBox
+          }
+
+          contents += new FlowPanel() {
+            contents += new Label("Sort apps by: ")
+            sortingRadios.foreach(radio => contents += radio)
+          }
+
+          contents += continueButton
+
         }
-
-        contents += new FlowPanel(){
-          contents += new Label("Sort apps by: ")
-          sortingRadios.foreach(radio => contents += radio)
-        }
-
-        contents += continueButton
-
+        window.preferredSize = null
+        window.visible = true
+        window.centerOnScreen()
+        window.pack()
       }
-
     }
-    window.visible = true
-    window.centerOnScreen()
-    window.pack()
-    window.open()
-
+    worker.execute()
   }
 
   private def loadSearch(developer: String,sorting: String) : Unit = {
 
     val window = new LoadingDataFrame(SearchByDeveloper.this.toString(),"Loading data...")
+    window.contents.head.asInstanceOf[BoxPanel].contents += new ProgressBar {
+      indeterminate = true
+    }
     window.start()
 
     val worker = new SwingWorker[(DataFrame, DataFrame),Unit] {
