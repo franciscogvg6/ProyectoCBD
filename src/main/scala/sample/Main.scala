@@ -16,9 +16,7 @@
  */
 package main.scala.sample
 
-import org.apache.spark.sql.{DataFrame}
-
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import menu._
@@ -27,10 +25,9 @@ import menu._
 object Main {
   var data : DataFrame = null
   var spark : SparkSession = null
+  var devs : DataFrame = null
+
   private def config(): SparkSession = {
-    // Disable logging
-    Logger.getLogger("org").setLevel(Level.OFF)
-    Logger.getLogger("akka").setLevel(Level.OFF)
 
     val spark = SparkSession
       .builder()

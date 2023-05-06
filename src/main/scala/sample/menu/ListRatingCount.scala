@@ -1,8 +1,8 @@
 package main.scala.sample.menu
 import main.scala.sample.Main
 import main.scala.sample.components.{DataFrameTable, FilterFrame, LoadingDataFrame}
-import org.apache.spark.sql.functions.{avg, col, sum}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.DataFrame
 
 import java.awt.{Color, Toolkit}
 import javax.swing.SwingWorker
@@ -22,7 +22,7 @@ class ListRatingCount extends MenuOption {
   }
 
   private def loadTable(selectedCols: Seq[String]): Unit = {
-    val window = new LoadingDataFrame(ListRatingCount.this.toString())
+    val window = new LoadingDataFrame(ListRatingCount.this.toString(),"Loading data...")
     window.start()
 
     val worker = new SwingWorker[DataFrame, Unit] {

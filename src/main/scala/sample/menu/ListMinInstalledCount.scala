@@ -24,7 +24,7 @@ class ListMinInstalledCount extends MenuOption {
   }
 
   private def loadTable(selectedCols: Seq[String]) : Unit = {
-    val window = new LoadingDataFrame(ListMinInstalledCount.this.toString())
+    val window = new LoadingDataFrame(ListMinInstalledCount.this.toString(),"Loading Data...")
     window.start()
 
     val worker = new SwingWorker[DataFrame, Unit] {
