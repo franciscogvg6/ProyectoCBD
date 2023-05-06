@@ -16,8 +16,7 @@ class PercentageGoodAppsPerPrice extends MenuOption {
   }
 
   override def start(): Unit = {
-    val columnNames = Main.data.columns.toSeq
-    val window = new LoadingDataFrame(PercentageGoodAppsPerPrice.this.toString())
+    val window = new LoadingDataFrame(PercentageGoodAppsPerPrice.this.toString(),"Loading data...")
     window.start()
 
     val worker = new SwingWorker[DataFrame, Unit] {
@@ -28,7 +27,7 @@ class PercentageGoodAppsPerPrice extends MenuOption {
       override def done(): Unit = {
         val dataTable: DataFrame = get()
         val lista1 = new DataFrameTable(dataTable, dataTable.columns)
-        window.preferredSize = new Dimension(1080, 720)
+        window.preferredSize = new Dimension(480, 360)
         window.location = new Point(0, 0)
         window.contents = lista1
         window.pack()
@@ -45,17 +44,15 @@ class PercentageGoodAppsPerPrice extends MenuOption {
       .filter((col("Free")==="False"))
       .filter((col("Price")<10))
 
-
     val rangos = data.withColumn("Range",
       when(floor(col("Price")) === ceil(col("Price")), null)
       .otherwise(concat((floor(col("Price"))).cast("int"), lit("-"), (ceil(col("Price"))).cast("int"))))
 
     val rangosFiltrados = rangos.filter(col("Range").isNotNull)
 
-
     val df_grouped = rangosFiltrados
       .groupBy("Range")
-      .agg(avg(when(col("Editors Choice") === "True", 1).otherwise(0)).alias("Percentage of good apps"))
+      .agg(avg(when(col("Editors Choice") === "True", 100).otherwise(0)).alias("Percentage of good apps"))
       .sort(col("Range").asc)
 
       df_grouped

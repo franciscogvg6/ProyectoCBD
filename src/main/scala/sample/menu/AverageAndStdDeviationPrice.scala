@@ -14,8 +14,7 @@ class AverageAndStdDeviationPrice extends MenuOption{
   }
 
   override def start(): Unit = {
-    val columnNames = Main.data.columns.toSeq
-    val window = new LoadingDataFrame(AverageAndStdDeviationPrice.this.toString())
+    val window = new LoadingDataFrame(AverageAndStdDeviationPrice.this.toString(),"Loading data")
     window.start()
 
     val worker = new SwingWorker[Seq[Double], Int] {
@@ -27,8 +26,8 @@ class AverageAndStdDeviationPrice extends MenuOption{
         val dataTable: Seq[Double] = get().toSeq
         window.contents = new BoxPanel(Orientation.Vertical) {
           border = Swing.EmptyBorder(10)
-          contents += new Label(f"Average price of apps is: ${dataTable(0)}%1.2f €")
-          contents += new Label(f"Standard deviation of apps is: ${dataTable(1)}%1.2f")
+          contents += new Label(f"The average price of apps is: ${dataTable(0)}%1.2f €")
+          contents += new Label(f"The standard deviation of the data is: ${dataTable(1)}%1.2f")
         }
         window.pack()
 

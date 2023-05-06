@@ -5,6 +5,7 @@ import main.scala.sample.components.{DataFrameTable, FilterFrame, LoadingDataFra
 import main.scala.sample.menu.MenuOption
 import org.apache.spark.sql.functions.{avg, col, sum}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import sample.components.PieChartComponent
 
 import scala.io.Source
 import java.awt.{Color, Toolkit}
@@ -19,8 +20,7 @@ class PercentageFreeApps extends MenuOption{
   }
 
   override def start(): Unit = {
-    val columnNames = Main.data.columns.toSeq
-    val window = new LoadingDataFrame(PercentageFreeApps.this.toString())
+    val window = new LoadingDataFrame(PercentageFreeApps.this.toString(),"Loading data...")
     window.start()
 
     val worker = new SwingWorker[Double, Unit] {
@@ -33,6 +33,12 @@ class PercentageFreeApps extends MenuOption{
         window.contents = new BoxPanel(Orientation.Vertical) {
           border = Swing.EmptyBorder(10)
           contents += new Label(f"Percentage of free apps is: $dataTable%1.2f %%")
+          contents += new BoxPanel(Orientation.Vertical) {
+            val colors = Seq(Color.decode("#0D5C63"),Color.decode("#DF311E"))
+            val pieData : Seq[(String,Double)] = Seq(("% Free apps",dataTable),("% NOT Free apps",100.0-dataTable))
+            contents += new PieChartComponent(pieData,colors)
+            window.preferredSize = new Dimension(720,480)
+          }
         }
         window.pack()
 
@@ -45,7 +51,6 @@ class PercentageFreeApps extends MenuOption{
 
     val data = Main.data
       .filter(col("Free") === "True").count()
-
 
     val total = Main.data.count()
 

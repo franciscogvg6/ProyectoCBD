@@ -67,9 +67,14 @@ class Menu() extends MainFrame {
           // Read file
           val df = Main.spark.read.option("header", true).csv(s"data/$FILENAME")
           Main.data = df
+
           Main.devs = df.select("Developer Id")
+            .filter(col("Developer Id").isNotNull)
             .distinct()
+            .select("Developer Id")
+            .repartition(8)
             .sort(lower(col("Developer Id")).asc)
+
           true
 
         } catch {

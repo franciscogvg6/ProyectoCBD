@@ -8,6 +8,7 @@ class FilterFrame(columnNames: Seq[String], mainFunction: Seq[String] => Unit) e
 
   title = "Filter Columns"
   preferredSize = new Dimension(360, 25 * (columnNames.size + 1))
+  resizable = false
   private val checkList = ListBuffer.empty[CheckBox]
   contents = new GridPanel(columnNames.size + 1, 1) {
 

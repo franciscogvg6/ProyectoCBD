@@ -114,12 +114,10 @@ class PredictRatingsAndInstalls extends MenuOption {
   }
 
   private def predictRatingsAndInstalls(price:Double,category:String,contentRating:String,addsSupported:Boolean): Unit = {
-    val resultWindow = new LoadingDataFrame(PredictRatingsAndInstalls.this.toString(),"Processing data...")
+    val resultWindow = new LoadingDataFrame(PredictRatingsAndInstalls.this.toString(),"Processing data...",false)
     resultWindow.start()
 
-    var progress = 0
     val progressBar = new ProgressBar() {
-      value = progress
       min = 0
       max = 100
     }

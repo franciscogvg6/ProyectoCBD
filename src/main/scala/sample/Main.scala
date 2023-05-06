@@ -20,6 +20,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import menu._
+import org.apache.spark.rdd.RDD
 
 
 object Main {

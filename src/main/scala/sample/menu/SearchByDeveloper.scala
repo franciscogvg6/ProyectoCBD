@@ -8,7 +8,7 @@ import org.apache.spark.sql.{DataFrame, Encoders}
 import java.awt.Toolkit
 import javax.swing.SwingWorker
 import scala.swing.event.ButtonClicked
-import scala.swing.{BoxPanel, Button, ButtonGroup, ComboBox, Dimension, FlowPanel, Frame, GridPanel, Label, Orientation, Point, ProgressBar, RadioButton, Swing}
+import scala.swing.{BoxPanel, Button, ButtonGroup, ComboBox, Dimension, FlowPanel, GridPanel, Label, Orientation, Point, ProgressBar, RadioButton, Swing}
 
 class SearchByDeveloper extends MenuOption {
   override def toString(): String = {
@@ -18,15 +18,12 @@ class SearchByDeveloper extends MenuOption {
 
     val window = new LoadingDataFrame(frameTitle = "Loading developer data...",
       loadingText = "Loading developer data...")
-    window.contents.head.asInstanceOf[BoxPanel].contents += new ProgressBar {
-      indeterminate = true
-    }
     window.start()
 
     val worker = new SwingWorker[Seq[String],Unit] {
       override def doInBackground(): Seq[String] = {
-        Main.devs.filter(col("Developer Id").isNotNull).map(dev => dev.getString(0))(Encoders.STRING)
-          .collect().toSeq
+        Main.devs.collect()
+          .map(_.getString(0)).toSeq
       }
 
       override def done(): Unit = {
@@ -77,9 +74,6 @@ class SearchByDeveloper extends MenuOption {
   private def loadSearch(developer: String,sorting: String) : Unit = {
 
     val window = new LoadingDataFrame(SearchByDeveloper.this.toString(),"Loading data...")
-    window.contents.head.asInstanceOf[BoxPanel].contents += new ProgressBar {
-      indeterminate = true
-    }
     window.start()
 
     val worker = new SwingWorker[(DataFrame, DataFrame),Unit] {

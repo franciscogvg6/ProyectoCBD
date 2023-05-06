@@ -18,8 +18,7 @@ class MostCommonCategory extends MenuOption {
   }
 
   override def start(): Unit = {
-    val columnNames = Main.data.columns.toSeq
-    val window = new LoadingDataFrame(MostCommonCategory.this.toString())
+    val window = new LoadingDataFrame(MostCommonCategory.this.toString(),"Loading data...")
     window.start()
 
     val worker = new SwingWorker[DataFrame, Unit] {
@@ -30,7 +29,7 @@ class MostCommonCategory extends MenuOption {
       override def done(): Unit = {
         val dataTable: DataFrame = get()
         val lista1 = new DataFrameTable(dataTable, dataTable.columns)
-        window.preferredSize = new Dimension( 1080, 720)
+        window.preferredSize = new Dimension( 480, 360)
         window.location = new Point(0, 0)
         window.contents = lista1
         window.pack()
@@ -45,7 +44,8 @@ class MostCommonCategory extends MenuOption {
  private def processDataFrame(): DataFrame = {
 
     val data = Main.data
-      .groupBy("Category").count().as("Count")
+      .groupBy("Category").count()
+      .select(col("Category"),col("count").as("Count"))
 
     val mostCommon = data.filter(col("Count")>1).sort(col("Count").desc)
     mostCommon
