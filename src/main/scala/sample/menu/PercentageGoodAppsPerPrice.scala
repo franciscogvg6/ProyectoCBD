@@ -12,7 +12,7 @@ import scala.swing.{Dimension, Point, TextField}
 class PercentageGoodAppsPerPrice extends MenuOption {
 
   override def toString(): String = {
-    "Percentage of Good Apps Per Price"
+    "Percentage of Featured Apps By Price"
   }
 
   override def start(): Unit = {
@@ -52,7 +52,7 @@ class PercentageGoodAppsPerPrice extends MenuOption {
 
     val df_grouped = rangosFiltrados
       .groupBy("Range")
-      .agg(avg(when(col("Editors Choice") === "True", 100).otherwise(0)).alias("Percentage of good apps"))
+      .agg(avg(when(col("Editors Choice") === "True", 100).otherwise(0)).alias("Percentage (%) of featured apps"))
       .sort(col("Range").asc)
 
       df_grouped
