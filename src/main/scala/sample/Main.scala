@@ -28,9 +28,6 @@ object Main {
   var devs : DataFrame = null
 
   private def config(): SparkSession = {
-    // Disable logging
-    Logger.getLogger("org").setLevel(Level.OFF)
-    Logger.getLogger("akka").setLevel(Level.OFF)
 
     val spark = SparkSession
       .builder()

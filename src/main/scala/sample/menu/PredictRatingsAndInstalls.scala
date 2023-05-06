@@ -289,6 +289,7 @@ class PredictRatingsAndInstalls extends MenuOption {
           border = Swing.EmptyBorder(10)
           contents += displayTextPanel
         }
+        resultWindow.preferredSize = null
         resultWindow.contents = mainPanel
         resultWindow.centerOnScreen()
         resultWindow.pack()
