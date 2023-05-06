@@ -22,8 +22,7 @@ class Menu() extends MainFrame {
     new ListRatingCount(),
     new MostCommonCategory(),
     new PercentageFreeApps(),
-    new AveragePrice(),
-    new DTPrice(),
+    new AverageAndStdDeviationPrice(),
     new PercentageGoodAppsPerPrice(),
   )
 

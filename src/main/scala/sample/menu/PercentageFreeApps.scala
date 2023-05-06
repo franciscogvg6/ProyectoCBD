@@ -32,7 +32,7 @@ class PercentageFreeApps extends MenuOption{
         val dataTable: Double = get()
         window.contents = new BoxPanel(Orientation.Vertical) {
           border = Swing.EmptyBorder(10)
-          contents += new Label(f"El porcentaje de aplicaciones gratuitas es: $dataTable%1.2f %%")
+          contents += new Label(f"Percentage of free apps is: $dataTable%1.2f %%")
         }
         window.pack()
 

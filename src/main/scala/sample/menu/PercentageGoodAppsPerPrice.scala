@@ -46,17 +46,17 @@ class PercentageGoodAppsPerPrice extends MenuOption {
       .filter((col("Price")<10))
 
 
-    val rangos = data.withColumn("Rangos de precios",
+    val rangos = data.withColumn("Range",
       when(floor(col("Price")) === ceil(col("Price")), null)
       .otherwise(concat((floor(col("Price"))).cast("int"), lit("-"), (ceil(col("Price"))).cast("int"))))
 
-    val rangosFiltrados = rangos.filter(col("Rangos de precios").isNotNull)
+    val rangosFiltrados = rangos.filter(col("Range").isNotNull)
 
 
     val df_grouped = rangosFiltrados
       .groupBy("Rangos de precios")
-      .agg(avg(when(col("Editors Choice") === "True", 1).otherwise(0)).alias("Porcentaje apps que funcionan bien"))
-      .sort(col("Rangos de precios").asc)
+      .agg(avg(when(col("Editors Choice") === "True", 1).otherwise(0)).alias("Percentage of good apps"))
+      .sort(col("Range").asc)
 
       df_grouped
 

@@ -2,32 +2,33 @@ package main.scala.sample.menu
 
 import main.scala.sample.Main
 import main.scala.sample.components.LoadingDataFrame
-import org.apache.spark.sql.functions.{avg, col}
+import org.apache.spark.sql.functions.{avg, col, stddev}
 
 import javax.swing.SwingWorker
 import scala.swing.{BoxPanel, Dimension, Label, Orientation, Point, Swing, TextField}
 
-class AveragePrice extends MenuOption{
+class AverageAndStdDeviationPrice extends MenuOption{
 
   override def toString(): String = {
-    "Average of prices"
+    "Average and Std Deviation of prices"
   }
 
   override def start(): Unit = {
     val columnNames = Main.data.columns.toSeq
-    val window = new LoadingDataFrame(AveragePrice.this.toString())
+    val window = new LoadingDataFrame(AverageAndStdDeviationPrice.this.toString())
     window.start()
 
-    val worker = new SwingWorker[Double, Unit] {
-      override def doInBackground(): Double = {
+    val worker = new SwingWorker[Seq[Double], Int] {
+      override def doInBackground(): Seq[Double] = {
         processDataFrame()
       }
 
       override def done(): Unit = {
-        val dataTable: Double = get()
+        val dataTable: Seq[Double] = get().toSeq
         window.contents = new BoxPanel(Orientation.Vertical) {
           border = Swing.EmptyBorder(10)
-          contents += new Label(f"La media de aplicaciones de pago es: $dataTable%1.2f €")
+          contents += new Label(f"Average price of apps is: ${dataTable(0)}%1.2f €")
+          contents += new Label(f"Standard deviation of apps is: ${dataTable(1)}%1.2f")
         }
         window.pack()
 
@@ -36,7 +37,7 @@ class AveragePrice extends MenuOption{
     worker.execute()
   }
 
-  private def processDataFrame(): Double = {
+  private def processDataFrame(): Seq[Double] = {
 
     val noGratis = Main.data
       .filter(col("Free") === "False")
@@ -46,7 +47,13 @@ class AveragePrice extends MenuOption{
       noGratis.agg(Map("Price" -> "avg")).first().getDouble(0)
     }
 
-    average
+
+    val desviacionMedia2 = noGratis.agg(stddev("Price")).first().getDouble(0)
+
+
+    Seq(average,desviacionMedia2)
+
+
   }
 
 }
