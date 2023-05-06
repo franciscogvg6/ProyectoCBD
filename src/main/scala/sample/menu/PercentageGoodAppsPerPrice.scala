@@ -54,7 +54,7 @@ class PercentageGoodAppsPerPrice extends MenuOption {
 
 
     val df_grouped = rangosFiltrados
-      .groupBy("Rangos de precios")
+      .groupBy("Range")
       .agg(avg(when(col("Editors Choice") === "True", 1).otherwise(0)).alias("Percentage of good apps"))
       .sort(col("Range").asc)
 
