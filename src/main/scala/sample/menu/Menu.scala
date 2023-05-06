@@ -22,6 +22,10 @@ class Menu() extends MainFrame {
   private val list_options : Seq[MenuOption] = Seq(
     new ListMinInstalledCount(),
     new ListRatingCount(),
+    new MostCommonCategory(),
+    new PercentageFreeApps(),
+    new AverageAndStdDeviationPrice(),
+    new PercentageGoodAppsPerPrice(),
   )
 
   private val predict_options: Seq[MenuOption] = Seq(
